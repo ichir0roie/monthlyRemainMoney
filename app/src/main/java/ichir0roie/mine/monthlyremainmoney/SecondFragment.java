@@ -48,6 +48,7 @@ public class SecondFragment extends Fragment {
     LvDtGet lvGt;
     LvDtIns lvIs;
     LvDtDel lvDl;
+    LvDtUpd lvUd;
 
     Context GContext;
     View GView;
@@ -130,8 +131,8 @@ public class SecondFragment extends Fragment {
             lv_fixed.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    lvDl=new LvDtDel();
-                    lvDl.setIds(GContext,lvGt.data.get(position).id);
+                    lvDl = new LvDtDel();
+                    lvDl.setTargetAndContext(GContext, lvGt.data.get(position).id);
                     executor.execute(lvDl);
 
                     lvSetup();
@@ -139,6 +140,20 @@ public class SecondFragment extends Fragment {
                     return false;
                 }
             });
+
+            lv_fixed.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    lvUd = new LvDtUpd();
+                    SBSC revBought = lvGt.data.get(position);
+                    revBought.buy = !revBought.buy;
+                    lvUd.setTargetAndContext(GContext, revBought);
+                    executor.execute(lvUd);
+
+                    lvSetup();
+                }
+            });
+
             //todo add update bought flag when click
         }
     };
@@ -203,24 +218,45 @@ public class SecondFragment extends Fragment {
     static class LvDtDel implements Runnable{
         Context context;
         int target;
+
         @Override
-        public void run(){
+        public void run() {
             AppDatabase db = Room.databaseBuilder(context,
                     AppDatabase.class, "database-name").build();
-            Dao dao= db.dao();
-            SBSC tO=new SBSC();
-            tO.id=target;
+            Dao dao = db.dao();
+            SBSC tO = new SBSC();
+            tO.id = target;
             dao.delete(tO);
         }
-        public void setIds(Context context,int target){
-            this.context=context;
-            this.target=target;
+
+        public void setTargetAndContext(Context context, int target) {
+            this.context = context;
+            this.target = target;
         }
     }
 
     static class myExecutor implements Executor {
         public void execute(Runnable r) {
             new Thread(r).start();
+        }
+    }
+
+    static class LvDtUpd implements Runnable {
+        Context context;
+        SBSC target;
+
+        @Override
+        public void run() {
+            AppDatabase db = Room.databaseBuilder(context,
+                    AppDatabase.class, "database-name").build();
+            Dao dao = db.dao();
+            dao.update(target);
+
+        }
+
+        public void setTargetAndContext(Context context, SBSC target) {
+            this.context = context;
+            this.target = target;
         }
     }
 

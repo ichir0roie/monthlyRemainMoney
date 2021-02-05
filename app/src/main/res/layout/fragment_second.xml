@@ -8,43 +8,11 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="7">
-
-            <TextView
-                android:id="@+id/fxd_li_tv_mdm"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="3"
-                android:text="残金"
-                android:textAlignment="center"
-                android:textSize="24sp" />
-
-            <EditText
-                android:id="@+id/et_set_balance"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="3"
-                android:ems="10"
-                android:hint="残金"
-                android:inputType="textPersonName"
-                android:numeric="integer" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="円"
-                android:textAlignment="center"
-                android:textSize="24sp" />
-
-        </LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -116,13 +84,40 @@
 
         </LinearLayout>
 
-
-        <ListView
-            android:id="@+id/setup_lv_fixed"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="7">
 
-        </ListView>
+            <TextView
+                android:id="@+id/fxd_li_tv_mdm"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:text="残金"
+                android:textAlignment="center"
+                android:textSize="24sp" />
+
+            <EditText
+                android:id="@+id/et_set_balance"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:ems="10"
+                android:hint="残金"
+                android:inputType="textPersonName"
+                android:numeric="integer" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="円"
+                android:textAlignment="center"
+                android:textSize="24sp" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -146,7 +141,8 @@
                 android:layout_weight="1"
                 android:ems="10"
                 android:hint="cost"
-                android:inputType="textPersonName"
+                android:inputType="number"
+                android:longClickable="false"
                 android:numeric="integer" />
 
             <Button
@@ -161,6 +157,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Return" />
+
+        <ListView
+            android:id="@+id/setup_lv_fixed"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:longClickable="true">
+
+        </ListView>
 
     </LinearLayout>
 

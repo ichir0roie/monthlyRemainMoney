@@ -3,9 +3,11 @@ package ichir0roie.mine.monthlyremainmoney;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -13,6 +15,15 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.room.Room;
+
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import ichir0roie.mine.monthlyremainmoney.MyDB.AAdptSBSC;
+import ichir0roie.mine.monthlyremainmoney.MyDB.AppDatabase;
+import ichir0roie.mine.monthlyremainmoney.MyDB.Dao;
+import ichir0roie.mine.monthlyremainmoney.MyDB.SBSC;
 
 public class SecondFragment extends Fragment {
 
@@ -23,10 +34,25 @@ public class SecondFragment extends Fragment {
     EditText et_set;
     EditText et_rate;
 
+    EditText et_name;
+    EditText et_value;
+
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
 
     ListView lv_fixed;
+
+    List<SBSC> LvDt;
+
+    Executor executor;
+    LvDtGet lvGt;
+    LvDtIns lvIs;
+    LvDtDel lvDl;
+
+    Context GContext;
+    View GView;
+
+    Handler GHandler;
 
 
     @Override
@@ -41,6 +67,14 @@ public class SecondFragment extends Fragment {
     public void onViewCreated(@NonNull final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        GContext=this.requireContext();
+        GView=this.getView();
+        GHandler=new Handler();
+
+        executor= new myExecutor();
+
+        lvSetup();
+
 
         sharedPreferences=view.getContext().getSharedPreferences("data", Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor=sharedPreferences.edit();
@@ -49,16 +83,28 @@ public class SecondFragment extends Fragment {
         et_set=view.findViewById(R.id.et_set_set);
         et_rate=view.findViewById(R.id.et_set_rate);
 
+        et_name=view.findViewById(R.id.et_ins_name);
+        et_value=view.findViewById(R.id.et_ins_val);
+
         et_balance.setText(String.valueOf(sharedPreferences.getInt("balance",0)));
         et_rate.setText(String.valueOf(sharedPreferences.getInt("rate",0)));
         et_set.setText(String.valueOf(sharedPreferences.getInt("set",0)));
 
         lv_fixed=view.findViewById(R.id.setup_lv_fixed);
 
+        lvSetup();
 
         view.findViewById(R.id.bt_add_list).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                lvIs=new LvDtIns();
+                lvIs.setClm(
+                        requireContext(),
+                        et_name.getText().toString(),
+                        et_value.getText().toString());
+                executor.execute(lvIs);
+
+                lvSetup();
 
             }
         });
@@ -73,12 +119,118 @@ public class SecondFragment extends Fragment {
                 editor.putInt("rate",Integer.parseInt(et_rate.getText().toString()));
                 editor.apply();
 
-
                 NavHostFragment.findNavController(SecondFragment.this)
                         .navigate(R.id.action_SecondFragment_to_FirstFragment);
             }
         });
     }
 
+    public void lvSetup(){
+
+        lvGt=new LvDtGet();
+        lvGt.setContextAndView(GContext,GView);
+        executor.execute(lvGt);
+
+        GHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                while (!lvGt.updated){
+                    try {
+                        wait(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                AAdptSBSC adaptor=new AAdptSBSC(GContext,lvGt.data);
+                lv_fixed.setAdapter(adaptor);
+                lv_fixed.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                    @Override
+                    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                        lvDl=new LvDtDel();
+                        lvDl.setIds(GContext,position);
+                        executor.execute(lvDl);
+
+                        lvSetup();
+
+                        return false;
+                    }
+                });
+            }
+        });
+    }
+
+    static class LvDtGet implements Runnable {
+        Context appCtt;
+        List<SBSC> data;
+        View view;
+
+        boolean updated=false;
+
+        @Override
+        public void run() {
+            AppDatabase db = Room.databaseBuilder(appCtt,
+                    AppDatabase.class, "database-name").build();
+            Dao dao= db.dao();
+            List<SBSC> list=dao.getAll();
+            data=list;
+            updated=true;
+
+
+
+        }
+        public void setContextAndView(Context context,View view){
+            this.appCtt=context;
+            this.view=view;
+            updated=false;
+        }
+    }
+
+    static class LvDtIns implements Runnable{
+        Context appCtt;
+        SBSC clm;
+        @Override
+        public void run() {
+            AppDatabase db = Room.databaseBuilder(appCtt,
+                    AppDatabase.class, "database-name").build();
+            Dao dao= db.dao();
+            dao.insertAll(clm);
+        }
+        public void setClm(Context context,String name,String value){
+            appCtt=context;
+            clm=new SBSC();
+            clm.name=name;
+            clm.buy=false;
+            int valueIns=0;
+            if(!value.equals("")){
+                valueIns=Integer.parseInt(value);
+            }
+            clm.value=valueIns;
+        }
+    }
+
+    static class LvDtDel implements Runnable{
+        Context context;
+        int target;
+        @Override
+        public void run(){
+            AppDatabase db = Room.databaseBuilder(context,
+                    AppDatabase.class, "database-name").build();
+            Dao dao= db.dao();
+            SBSC tO=new SBSC();
+            tO.id=target;
+            dao.delete(tO);
+        }
+        public void setIds(Context context,int target){
+            this.context=context;
+            this.target=target;
+        }
+    }
+
+    static class myExecutor implements Executor {
+        public void execute(Runnable r) {
+            new Thread(r).start();
+        }
+    }
 
 }

@@ -3,12 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fxd_const"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:focusable="auto">
 
     <LinearLayout
         android:id="@+id/fxd_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -33,12 +36,15 @@
             android:textAlignment="center"
             android:textSize="24sp" />
 
-        <CheckBox
-            android:id="@+id/fxd_cb_bought"
+        <TextView
+            android:id="@+id/fxd_tv_bought"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="bought" />
+            android:text="bought"
+            android:textAlignment="center"
+            android:textSize="24sp" />
+
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

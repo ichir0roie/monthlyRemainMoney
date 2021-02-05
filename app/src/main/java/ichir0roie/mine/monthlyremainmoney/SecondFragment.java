@@ -73,9 +73,6 @@ public class SecondFragment extends Fragment {
 
         executor= new myExecutor();
 
-        lvSetup();
-
-
         sharedPreferences=view.getContext().getSharedPreferences("data", Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor=sharedPreferences.edit();
 
@@ -99,7 +96,7 @@ public class SecondFragment extends Fragment {
             public void onClick(View v) {
                 lvIs=new LvDtIns();
                 lvIs.setClm(
-                        requireContext(),
+                        GContext,
                         et_name.getText().toString(),
                         et_value.getText().toString());
                 executor.execute(lvIs);
@@ -125,47 +122,41 @@ public class SecondFragment extends Fragment {
         });
     }
 
+    Runnable lvSetter=new Runnable() {
+        @Override
+        public void run() {
+            AAdptSBSC adaptor=new AAdptSBSC(GContext,lvGt.data);
+            lv_fixed.setAdapter(adaptor);
+            lv_fixed.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                    lvDl=new LvDtDel();
+                    lvDl.setIds(GContext,lvGt.data.get(position).id);
+                    executor.execute(lvDl);
+
+                    lvSetup();
+
+                    return false;
+                }
+            });
+            //todo add update bought flag when click
+        }
+    };
+
     public void lvSetup(){
 
         lvGt=new LvDtGet();
-        lvGt.setContextAndView(GContext,GView);
+        lvGt.setContextAndView(GContext,GView,lvSetter,GHandler);
         executor.execute(lvGt);
 
-        GHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                while (!lvGt.updated){
-                    try {
-                        wait(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                AAdptSBSC adaptor=new AAdptSBSC(GContext,lvGt.data);
-                lv_fixed.setAdapter(adaptor);
-                lv_fixed.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                    @Override
-                    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                        lvDl=new LvDtDel();
-                        lvDl.setIds(GContext,position);
-                        executor.execute(lvDl);
-
-                        lvSetup();
-
-                        return false;
-                    }
-                });
-            }
-        });
     }
 
     static class LvDtGet implements Runnable {
         Context appCtt;
         List<SBSC> data;
         View view;
-
-        boolean updated=false;
+        Runnable setLv;
+        Handler mainHdl;
 
         @Override
         public void run() {
@@ -174,15 +165,15 @@ public class SecondFragment extends Fragment {
             Dao dao= db.dao();
             List<SBSC> list=dao.getAll();
             data=list;
-            updated=true;
 
-
+            mainHdl.post(setLv);
 
         }
-        public void setContextAndView(Context context,View view){
+        public void setContextAndView(Context context,View view,Runnable setLv,Handler mainHdl){
             this.appCtt=context;
             this.view=view;
-            updated=false;
+            this.setLv=setLv;
+            this.mainHdl=mainHdl;
         }
     }
 

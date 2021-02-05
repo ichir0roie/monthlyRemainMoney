@@ -3,6 +3,7 @@ package ichir0roie.mine.monthlyremainmoney.MyDB;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -16,9 +17,12 @@ public interface Dao {
     List<SBSC> loadAllByIds(int[] ids);
 
     @Insert
-    void insertAll(SBSC...data);
+    void insertAll(SBSC data);
 
     @Delete
     void delete(SBSC column);
+
+    @Update(entity = SBSC.class)
+    void update(SBSC column);
 
 }

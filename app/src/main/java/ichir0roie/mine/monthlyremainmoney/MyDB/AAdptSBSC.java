@@ -26,8 +26,14 @@ public class AAdptSBSC extends ArrayAdapter<SBSC> {
         }
         TextView name=(TextView)cvtV.findViewById(R.id.fxd_tv_name);
         TextView value=(TextView)cvtV.findViewById(R.id.fxd_tv_value);
+        TextView bought=(TextView)cvtV.findViewById(R.id.fxd_tv_bought);
         name.setText(data.name);
         value.setText(String.valueOf(data.value));
+        if(data.buy){
+            bought.setText("購入済み");
+        }else {
+            bought.setText("購入予定");
+        }
 
         return cvtV;
     }

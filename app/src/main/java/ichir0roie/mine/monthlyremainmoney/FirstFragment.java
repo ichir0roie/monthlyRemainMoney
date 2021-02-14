@@ -259,7 +259,7 @@ public class FirstFragment extends Fragment {
         }
 
         int remain = balance - fixed;
-        todayConsum = remain / days_left;
+        todayConsum = (remain / days_left/100)*100;
         if (todayConsum > todayLimit) {
             todayConsum = todayLimit;
         }
